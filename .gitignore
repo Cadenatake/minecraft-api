@@ -69,4 +69,4 @@ typings/
 .env
 .next
 dist
-db/*
+db
