@@ -4,6 +4,7 @@ if (!fs.existsSync('db')) fs.mkdirSync('db')
 
 import { post } from "./webhook"
 import { pingAsync, pingOnlineAsync } from "./ping"
+import { serverIconAsync } from "./icon"
 import { statusAsync, startAsync, stopAsync, restartAsync } from "./run"
 
 const app: express.Express = express()
@@ -36,6 +37,23 @@ router.get('/api/status/online', (req: express.Request, res: express.Response) =
     pingOnlineAsync()
         .then((json) => {
             res.send(json)
+        }).catch((err) => {
+            res.send(err)
+        })
+})
+// -----------------------------------------------------------------------------
+
+
+// --- Get Server Icon ---------------------------------------------------------
+router.get('/api/icon', (req: express.Request, res: express.Response) => {
+    serverIconAsync()
+        .then((img) => {
+            res.writeHead(200, {
+                'Content-Type': 'image/png',
+                'Content-Length': img.length
+            });
+            res.end(img);
+            // res.send(json)
         }).catch((err) => {
             res.send(err)
         })
