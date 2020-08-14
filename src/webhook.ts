@@ -4,7 +4,7 @@ const exec = require('child_process').exec
 const dateformat = require('dateformat')
 const now = new Date()
 const sqlite = require('sqlite3').verbose()
-const db = new sqlite.Database('db/webhook.sqlite')
+const db = new sqlite.Database('db/log.sqlite')
 
 // ######   SETTINGS   #########################################################
 const color_success = 6815520
@@ -13,12 +13,11 @@ const color_error = 16724530
 const color_notify = 12895428
 const webhook_icon = process.env.WEBHOOK_ICON as string
 const webhook_copyright = process.env.WEBHOOK_COPYRIGHT as string
-const webhook_url_alert = process.env.WEBHOOK_URL_ALERT as string
-const webhook_url_log = process.env.WEBHOOK_URL_LOG as string
+const webhook_url = process.env.WEBHOOK_URL as string
 // #############################################################################
 
 
-export function post(title: string, description: string, status: number, notify: boolean) {
+export function post(title: string, description: string, status: number) {
 
     // 1: Success (green)
     // 2: Warning (yellow)
@@ -39,13 +38,6 @@ export function post(title: string, description: string, status: number, notify:
             var color = color_notify
     }
 
-    // true: Send to room with notification ON
-    // false: Send to room with notification OFF
-    if (notify)
-        var webhook_url = webhook_url_alert
-    else
-        var webhook_url = webhook_url_log
-
     const json = `
         {
             "embeds": [ {
@@ -59,21 +51,20 @@ export function post(title: string, description: string, status: number, notify:
                 }
             } ]
         }
-    `;
+    `
 
     exec(`curl -H "Content-Type: application/json" -X POST -d '${json}' "${webhook_url}"`, (err: string, stdout: string, stderr: string) => {
         db.serialize(() => {
-            db.run('CREATE TABLE IF NOT EXISTS logs (id INTEGER PRIMARY KEY AUTOINCREMENT, title VARCHAR(80), description VARCHAR(255), url VARCHAR(80), created_at DATETIME, err TEXT, stdout TEXT)');
+            db.run('CREATE TABLE IF NOT EXISTS webhook (id INTEGER PRIMARY KEY AUTOINCREMENT, title VARCHAR(80), description VARCHAR(255), url VARCHAR(80), created_at DATETIME, err TEXT, stdout TEXT)')
 
-            const stmt = db.prepare('INSERT INTO logs (title, description, url, created_at, err, stdout) VALUES (?, ?, ?, ?, ?, ?)');
+            const stmt = db.prepare('INSERT INTO webhook (title, description, url, created_at, err, stdout) VALUES (?, ?, ?, ?, ?, ?)')
             if (err) {
-                stmt.run([title, description, webhook_url, dateformat(now, 'yyyy-mm-dd HH:MM:ss'), stderr, stdout]);
+                stmt.run([title, description, webhook_url, dateformat(now, 'yyyy-mm-dd HH:MM:ss'), stderr, stdout])
             } else {
-                stmt.run([title, description, webhook_url, dateformat(now, 'yyyy-mm-dd HH:MM:ss'), '', stdout]);
+                stmt.run([title, description, webhook_url, dateformat(now, 'yyyy-mm-dd HH:MM:ss'), '', stdout])
             }
 
-            stmt.finalize();
-        });
-        db.close();
+            stmt.finalize()
+        })
     })
 }
