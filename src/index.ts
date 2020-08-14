@@ -4,7 +4,7 @@ if (!fs.existsSync('db')) fs.mkdirSync('db')
 
 import { post } from "./webhook"
 import { pingAsync, pingOnlineAsync } from "./ping"
-import { statusAsync, startAsync, stopAsync } from "./run"
+import { statusAsync, startAsync, stopAsync, restartAsync } from "./run"
 
 const app: express.Express = express()
 const Joi = require('joi')
@@ -52,7 +52,7 @@ router.post('/api/run/start', (req: express.Request, res: express.Response) => {
 
     const validation = schema.validate(req.body);
     if (validation.error) {
-        post("不正なリクエストを拒否しました！", "公式サイト・アプリ以外からリクエストチャレンジされた可能性があります。", 3, true)
+        post("不正なリクエストを拒否しました！", "公式サイト・アプリ以外からチャレンジされた可能性があります。", 3, true)
         res.status(400).send('Bad request')
         return
     }
@@ -64,13 +64,13 @@ router.post('/api/run/start', (req: express.Request, res: express.Response) => {
                     res.send('GREAT')
                 })
                 .catch(() => {
-                    post("起動コマンドを拒否しました", "サーバが既に起動しているため、起動コマンドを拒否しました。サーバとの同期ができていない恐れがあります。[Err: StartAsync()]", 2, true)
+                    post("起動コマンドを拒否しました", "サーバが既に起動しているため、起動コマンドを拒否しました。サーバとの同期ができていない恐れがあります。[Err: startAsync()]", 2, true)
                     res.status(400).send('Bad request')
                     return
                 })
         })
         .catch(() => {
-            post("起動コマンドを拒否しました", "既に起動しているため、起動コマンドを拒否しました。サーバとの同期ができていない恐れがあります。[Err: StatusAsync()]", 2, true)
+            post("起動コマンドを拒否しました", "既に起動しているため、起動コマンドを拒否しました。サーバとの同期ができていない恐れがあります。[Err: statusAsync()]", 2, true)
             res.status(400).send('Bad request')
             return
         })
@@ -86,14 +86,14 @@ router.post('/api/run/stop', (req: express.Request, res: express.Response) => {
 
     const validation = schema.validate(req.body);
     if (validation.error) {
-        post("不正なリクエストを拒否しました！", "公式サイト・アプリ以外からリクエストチャレンジされた可能性があります。", 3, true)
+        post("不正なリクエストを拒否しました！", "公式サイト・アプリ以外からチャレンジされた可能性があります。", 3, true)
         res.status(400).send('Bad request')
         return
     }
 
     statusAsync()
         .then(() => {
-            post("停止コマンドを拒否しました", "サーバが起動されていないため、停止コマンドを拒否しました。サーバとの同期ができていない恐れがあります。[Err: StatusAsync()]", 2, true)
+            post("停止コマンドを拒否しました", "サーバが起動されていないため、停止コマンドを拒否しました。サーバとの同期ができていない恐れがあります。[Err: statusAsync()]", 2, true)
             res.status(400).send('Bad request')
         })
         .catch(() => {
@@ -102,7 +102,41 @@ router.post('/api/run/stop', (req: express.Request, res: express.Response) => {
                     res.send('GREAT')
                 })
                 .catch(() => {
-                    post("停止コマンドを拒否しました", "サーバが起動されていないため、停止コマンドを拒否しました。サーバとの同期ができていない恐れがあります。[Err: StopAsync()]", 2, true)
+                    post("停止コマンドを拒否しました", "サーバが起動されていないため、停止コマンドを拒否しました。サーバとの同期ができていない恐れがあります。[Err: stopAsync()]", 2, true)
+                    res.status(400).send('Bad request')
+                    return
+                })
+            return
+        })
+})
+// -----------------------------------------------------------------------------
+
+
+// --- Restart Server ----------------------------------------------------------
+router.post('/api/run/restart', (req: express.Request, res: express.Response) => {
+    const schema = Joi.object({
+        user: Joi.string().required(),
+    })
+
+    const validation = schema.validate(req.body);
+    if (validation.error) {
+        post("不正なリクエストを拒否しました！", "公式サイト・アプリ以外からチャレンジされた可能性があります。", 3, true)
+        res.status(400).send('Bad request')
+        return
+    }
+
+    statusAsync()
+        .then(() => {
+            post("再起動コマンドを拒否しました", "サーバが起動されていないため、再起動コマンドを拒否しました。サーバとの同期ができていない恐れがあります。[Err: statusAsync()]", 2, true)
+            res.status(400).send('Bad request')
+        })
+        .catch(() => {
+            restartAsync()
+                .then(() => {
+                    res.send('GREAT')
+                })
+                .catch(() => {
+                    post("再起動コマンドを拒否しました", "サーバが起動されていないため、再起動コマンドを拒否しました。サーバとの同期ができていない恐れがあります。[Err: restartAsync()]", 2, true)
                     res.status(400).send('Bad request')
                     return
                 })

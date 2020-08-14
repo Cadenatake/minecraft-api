@@ -12,6 +12,7 @@ const color_warning = 16768300
 const color_error = 16724530
 const color_notify = 12895428
 const webhook_icon = process.env.WEBHOOK_ICON as string
+const webhook_copyright = process.env.WEBHOOK_COPYRIGHT as string
 const webhook_url_alert = process.env.WEBHOOK_URL_ALERT as string
 const webhook_url_log = process.env.WEBHOOK_URL_LOG as string
 // #############################################################################
@@ -53,7 +54,7 @@ export function post(title: string, description: string, status: number, notify:
                 "timestamp": "${dateformat(now, 'yyyy-mm-dd HH:MM:ss+09:00')}",
                 "color": "${color}",
                 "footer": {
-                    "text": "© ${dateformat(now, 'yyyy')} 情クラ！プロジェクト",
+                    "text": "© ${dateformat(now, 'yyyy')} ${webhook_copyright}",
                     "icon_url": "${webhook_icon}"
                 }
             } ]
