@@ -116,10 +116,6 @@ function runIntervalCheck(user: string) {
                         } else {
                             const now_interval = new Date()
                             now_interval.setSeconds(now_interval.getSeconds() - parseInt(process.env.WAIT_SECONDS_FROM_LAST_PROCESS as string))
-                            // console.log(date[0]['created_at'] < dateformat(now_interval, 'yyyy-mm-dd HH:MM:ss'))
-                            // console.log(date[0]['created_at'])
-                            // console.log(dateformat(now_interval, 'yyyy-mm-dd HH:MM:ss'))
-                            // console.log(parseInt(process.env.WAIT_SECONDS_FROM_LAST_PROCESS as string))
                             resolve(date[0]['created_at'] < dateformat(now_interval, 'yyyy-mm-dd HH:MM:ss'))
                             return
                         }
