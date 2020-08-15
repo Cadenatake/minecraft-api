@@ -1,10 +1,11 @@
 import express from 'express'
 import fs from 'fs'
+if (!fs.existsSync('cache')) fs.mkdirSync('cache')
 if (!fs.existsSync('db')) fs.mkdirSync('db')
 
 import { post } from "./webhook"
 import { pingAsync, pingOnlineAsync } from "./ping"
-import { serverIconAsync } from "./icon"
+import { serverIconAsync, playerIconAsync } from "./icon"
 import { statusAsync, startAsync, stopAsync, restartAsync } from "./run"
 
 const app: express.Express = express()
@@ -49,16 +50,32 @@ router.get('/api/icon', (req: express.Request, res: express.Response) => {
     serverIconAsync()
         .then((img) => {
             res.writeHead(200, {
-                'Content-Type': 'image/png',
+                'Content-Type': 'image/png; charset=utf-8',
                 'Content-Length': img.length
-            });
-            res.end(img);
-            // res.send(json)
+            })
+            res.end(img, "binary")
         }).catch((err) => {
             res.send(err)
         })
 })
 // -----------------------------------------------------------------------------
+
+
+// --- Get Player Icon ---------------------------------------------------------
+router.get('/api/icon/:minecraftid', (req: express.Request, res: express.Response) => {
+    playerIconAsync(req.params.minecraftid)
+    .then((img) => {
+        res.writeHead(200, {
+            'Content-Type': 'image/png; charset=utf-8',
+            'Content-Length': img.length
+        })
+        res.end(img, "binary")
+        }).catch((err) => {
+            res.send(err)
+        })
+})
+// -----------------------------------------------------------------------------
+
 
 
 // --- Start Server ------------------------------------------------------------
@@ -86,13 +103,11 @@ router.post('/api/run/start', (req: express.Request, res: express.Response) => {
                     else
                         post("起動コマンドを拒否しました", "サーバが既に起動しているため、起動コマンドを拒否しました。サーバとの同期ができていない恐れがあります。[Err: startAsync()]", 2)
                     res.status(400).send('Bad request')
-                    // return
                 })
         })
         .catch(() => {
             post("起動コマンドを拒否しました", "既に起動しているため、起動コマンドを拒否しました。サーバとの同期ができていない恐れがあります。[Err: statusAsync()]", 2)
             res.status(400).send('Bad request')
-            // return
         })
 })
 // -----------------------------------------------------------------------------
@@ -127,9 +142,7 @@ router.post('/api/run/stop', (req: express.Request, res: express.Response) => {
                     else
                         post("停止コマンドを拒否しました", "サーバが起動されていないため、停止コマンドを拒否しました。サーバとの同期ができていない恐れがあります。[Err: stopAsync()]", 2)
                     res.status(400).send('Bad request')
-                    // return
                 })
-            // return
         })
 })
 // -----------------------------------------------------------------------------
@@ -164,9 +177,7 @@ router.post('/api/run/restart', (req: express.Request, res: express.Response) =>
                     else
                         post("再起動コマンドを拒否しました", "サーバが起動されていないため、再起動コマンドを拒否しました。サーバとの同期ができていない恐れがあります。[Err: restartAsync()]", 2)
                     res.status(400).send('Bad request')
-                    // return
                 })
-            // return
         })
 })
 // -----------------------------------------------------------------------------

@@ -68,5 +68,6 @@ typings/
 .yarn-integrity
 .env
 .next
-dist
-db
+cache/
+db/
+dist/
